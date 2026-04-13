@@ -1,6 +1,12 @@
 require_relative "boot"
 
-require "rails/all"
+# Only require essential Rails components for API
+require "rails"
+require "active_model/railtie"
+require "active_record/railtie"
+require "action_controller/railtie"
+require "action_view/railtie"
+require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -14,10 +20,17 @@ module Neofy
     # Configure for API-only application
     config.api_only = true
 
-    # Please, add to the `ignore` list any other `lib` subdirectories that do
-    # not contain `.rb` files, or that should not be reloaded or eager loaded.
-    # Common ones are `templates`, `generators`, or `middleware`.
-    config.autoload_lib(ignore: %w(assets tasks))
+    # Disable most Rails features to avoid initialization issues
+    config.middleware.delete ActionDispatch::Cookies
+    config.middleware.delete ActionDispatch::Session::CookieStore
+    config.middleware.delete ActionDispatch::Flash
+    
+    # Skip eager loading to avoid lazy load hook issues
+    config.eager_load = false
+    
+    # Minimal autoload paths
+    config.autoload_paths = []
+    config.eager_load_paths = []
 
     # Configuration for the application, engines, and railties goes here.
     #
