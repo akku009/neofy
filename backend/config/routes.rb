@@ -1,6 +1,9 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
+  # ── Root Route ───────────────────────────────────────────────────────────────
+  root to: "application#info"
+  
   # ── Health Check ─────────────────────────────────────────────────────────────
   get "health", to: "application#health"
 

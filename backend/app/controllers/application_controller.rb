@@ -2,9 +2,9 @@ class ApplicationController < ActionController::API
   include ActionController::MimeResponds
   include Pundit::Authorization
 
-  skip_before_action :authenticate_user!, only: [:health]
-  skip_before_action :set_current_attributes, only: [:health]
-  skip_before_action :resolve_tenant_from_subdomain, only: [:health]
+  skip_before_action :authenticate_user!, only: [:health, :info]
+  skip_before_action :set_current_attributes, only: [:health, :info]
+  skip_before_action :resolve_tenant_from_subdomain, only: [:health, :info]
 
   before_action :authenticate_user!
   before_action :set_current_attributes
@@ -119,6 +119,23 @@ class ApplicationController < ActionController::API
       status: "ok", 
       timestamp: Time.current.iso8601,
       version: "1.0.0"
+    }
+  end
+
+  # API info endpoint (no auth required)
+  def info
+    render json: {
+      name: "Neofy API",
+      version: "1.0.0",
+      description: "Shopify-equivalent SaaS platform API",
+      endpoints: {
+        health: "/health",
+        auth: "/api/v1/auth",
+        stores: "/api/v1/stores",
+        products: "/api/v1/products",
+        orders: "/api/v1/orders"
+      },
+      documentation: "https://docs.neofy.com"
     }
   end
 end
