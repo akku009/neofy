@@ -27,18 +27,21 @@ loop do
   
   response = case path
   when '/'
-    {
-      message: 'Neofy API is running',
-      status: 'ok',
-      version: '1.0.0',
-      server: 'Basic Ruby HTTP Server'
-    }
+    # Serve the HTML landing page
+    html_content = File.read('index.html')
+    client.puts "HTTP/1.1 200 OK"
+    client.puts "Content-Type: text/html"
+    client.puts "Content-Length: #{html_content.bytesize}"
+    client.puts "Connection: close"
+    client.puts ""
+    client.puts html_content
+    next
   when '/health'
     {
       status: 'ok',
       timestamp: Time.now.iso8601,
       version: '1.0.0',
-      server: 'Basic Ruby HTTP Server'
+      server: 'Neofy Platform'
     }
   else
     {
@@ -47,7 +50,7 @@ loop do
     }
   end
   
-  status_code = path == '/' || path == '/health' ? 200 : 404
+  status_code = path == '/health' ? 200 : 404
   
   client.puts "HTTP/1.1 #{status_code} OK"
   client.puts "Content-Type: application/json"
