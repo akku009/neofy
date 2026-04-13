@@ -8,14 +8,8 @@ Rails.application.configure do
   config.log_tags          = [:request_id]
 
   # ── Database / Caching ────────────────────────────────────────────────────────
-  config.cache_store = :redis_cache_store, {
-    url:               ENV.fetch("REDIS_URL", "redis://localhost:6379/1"),
-    expires_in:        1.hour,
-    namespace:         "neofy_cache",
-    error_handler:     lambda { |method:, returning:, exception:|
-      Rails.logger.warn("[Cache] Error on #{method}: #{exception.class}: #{exception.message}")
-    }
-  }
+  # Use file store for deployment to avoid Redis connection issues
+  config.cache_store = :file_store, Rails.root.join("tmp", "cache")
 
   # ── Background Jobs ───────────────────────────────────────────────────────────
   config.active_job.queue_adapter = :sidekiq
