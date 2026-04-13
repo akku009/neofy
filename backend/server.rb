@@ -11,6 +11,13 @@ loop do
   client = server.accept
   
   request_line = client.gets
+  
+  # Add guard clause for empty requests
+  if request_line.nil?
+    client.close
+    next
+  end
+  
   method, path, _ = request_line.split(' ')
   
   # Read headers
