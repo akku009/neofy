@@ -13,12 +13,8 @@ threads min_threads, max_threads
 workers ENV.fetch("WEB_CONCURRENCY", 2).to_i
 
 # Port / socket
-if ENV["RAILS_ENV"] == "production"
-  # Bind to Unix socket for Nginx → Puma communication (faster than TCP in prod)
-  bind "unix:///var/www/neofy/shared/tmp/sockets/puma.sock"
-else
-  port ENV.fetch("PORT", 3000)
-end
+# Render uses PORT env var, even in production
+port ENV.fetch("PORT", 3000)
 
 # PID file (used by systemd for process management)
 pidfile ENV.fetch("PIDFILE", "tmp/pids/server.pid")
@@ -48,4 +44,4 @@ on_worker_fork   { |_| Rails.logger.info("[Puma] Worker forked") }
 after_worker_fork { |_| Rails.logger.info("[Puma] Worker ready") }
 
 # Plugin for systemd watchdog / sd_notify (tells systemd the app is ready)
-plugin :systemd if ENV["RAILS_ENV"] == "production"
+plugin :systemd if ENV["RAILS_ENV"] == "production" || ENV["RACK_ENV"] == "production"
