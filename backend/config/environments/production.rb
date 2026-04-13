@@ -1,6 +1,8 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Secret key base for production
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") { "c97ddf8e354a88c375863d5478624a3e22024c18a181c5ffdf9e1c500702ba8216bc447712c3329b6df36d7630125a6db4dbd5f8d6b25963150e1655cf6abd1d" }
   config.enable_reloading  = false
   config.eager_load        = true
   config.consider_all_requests_local = false
