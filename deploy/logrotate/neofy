@@ -1,0 +1,31 @@
+# Place at: /etc/logrotate.d/neofy
+# Rotates Rails + Nginx logs daily, keeps 30 days
+
+/var/www/neofy/shared/log/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+    sharedscripts
+    postrotate
+        # Send HUP to Puma to reopen log files
+        [ -f /var/www/neofy/shared/tmp/pids/server.pid ] && \
+            kill -HUP $(cat /var/www/neofy/shared/tmp/pids/server.pid) 2>/dev/null || true
+    endscript
+}
+
+/var/log/nginx/neofy-*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    sharedscripts
+    postrotate
+        nginx -s reopen 2>/dev/null || true
+    endscript
+}

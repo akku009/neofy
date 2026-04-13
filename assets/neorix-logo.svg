@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" width="88" height="88">
+  <!-- NEORIX LABS — Standalone Mark -->
+  <!-- Blue container -->
+  <rect x="0" y="0" width="88" height="88" rx="14" fill="#0050CC"/>
+  <!-- Left vertical bar -->
+  <polygon points="14,14 26,14 26,74 14,74" fill="#FFFFFF"/>
+  <!-- Right vertical bar -->
+  <polygon points="62,14 74,14 74,74 62,74" fill="#FFFFFF"/>
+  <!-- Diagonal strike (N crossbar) -->
+  <polygon points="26,14 62,74 50,74 14,14" fill="#FFFFFF"/>
+  <!-- Blue cutout top-left (signal break) -->
+  <polygon points="30,14 38,14 26,36 18,36" fill="#0050CC"/>
+  <!-- Blue cutout bottom-right (signal break) -->
+  <polygon points="50,74 62,74 74,52 66,52" fill="#0050CC"/>
+  <!-- Accent dot — bottom-right signature -->
+  <circle cx="74" cy="74" r="5" fill="#0099FF"/>
+</svg>

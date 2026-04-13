@@ -1,0 +1,50 @@
+[Unit]
+Description=Neofy Background Jobs (Sidekiq)
+Documentation=https://github.com/mperham/sidekiq
+After=network.target mysql.service redis.service neofy-web.service
+Requires=mysql.service redis.service
+
+[Service]
+Type=simple
+
+User=deploy
+Group=deploy
+
+WorkingDirectory=/var/www/neofy/current/backend
+
+EnvironmentFile=/var/www/neofy/shared/config/.env
+
+Environment=PATH=/home/deploy/.rbenv/shims:/home/deploy/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=RBENV_ROOT=/home/deploy/.rbenv
+Environment=RAILS_ENV=production
+
+# Start Sidekiq with the project queue config
+ExecStart=/home/deploy/.rbenv/shims/bundle exec sidekiq \
+  -C config/sidekiq.yml \
+  -e production
+
+# TSTP signal → stop accepting new jobs, finish current ones (graceful drain)
+# This is the recommended Sidekiq shutdown signal
+ExecStop=/bin/kill -TSTP $MAINPID
+
+# Sidekiq needs ~30s to drain queues gracefully in production
+TimeoutStopSec=30
+
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Never kill Sidekiq with SIGKILL mid-job
+KillMode=process
+KillSignal=SIGTERM
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=neofy-sidekiq
+
+[Install]
+WantedBy=multi-user.target

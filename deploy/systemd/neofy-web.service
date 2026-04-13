@@ -1,0 +1,56 @@
+[Unit]
+Description=Neofy Web Server (Puma)
+Documentation=https://github.com/neorixlabs/neofy
+After=network.target mysql.service redis.service
+Requires=mysql.service redis.service
+
+[Service]
+Type=notify
+
+# Run as the deploy user (never root)
+User=deploy
+Group=deploy
+
+WorkingDirectory=/var/www/neofy/current/backend
+
+# Load environment variables from the shared .env file
+EnvironmentFile=/var/www/neofy/shared/config/.env
+
+# Use rbenv-managed Ruby
+Environment=PATH=/home/deploy/.rbenv/shims:/home/deploy/.rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=RBENV_ROOT=/home/deploy/.rbenv
+Environment=RAILS_ENV=production
+
+# Puma start command
+ExecStart=/home/deploy/.rbenv/shims/bundle exec puma -C config/puma.rb
+
+# Zero-downtime phased restart (USR1 = graceful restart of workers one by one)
+ExecReload=/bin/kill -USR1 $MAINPID
+
+# Graceful stop: finish in-flight requests before stopping
+ExecStop=/bin/kill -TSTP $MAINPID
+
+# If crashed, restart after 5 seconds. Give up after 3 failed starts in 60 seconds.
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+# PID file for tracking (Puma writes this)
+PIDFile=/var/www/neofy/shared/tmp/pids/server.pid
+
+# Security sandboxing
+NoNewPrivileges=true
+PrivateTmp=true
+
+# systemd watchdog integration (Puma notifies systemd when ready)
+WatchdogSec=30s
+NotifyAccess=all
+
+# Output to journald (use: journalctl -u neofy-web -f)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=neofy-web
+
+[Install]
+WantedBy=multi-user.target

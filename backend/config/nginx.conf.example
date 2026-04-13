@@ -1,0 +1,109 @@
+# Neofy — Nginx Reference Configuration
+# ──────────────────────────────────────────────────────────────────────────────
+# This file is a REFERENCE ONLY — copy and adapt for your server.
+# Nginx terminates SSL, enforces HTTPS, and proxies all requests to Rails (Puma).
+#
+# Architecture:
+#   Browser → Nginx (SSL, host routing) → Puma (Rails on :3000)
+#
+# Custom domain support:
+#   Any domain CNAME'd to your server IP is caught by the wildcard server_name.
+#   Rails resolves the tenant by looking up request.host in the domains table.
+#
+# Subdomain support:
+#   *.neofy.com → caught by the wildcard, Rails resolves via subdomain pattern.
+# ──────────────────────────────────────────────────────────────────────────────
+
+upstream neofy_rails {
+    server 127.0.0.1:3000;
+    keepalive 32;
+}
+
+# ── HTTP → HTTPS redirect ─────────────────────────────────────────────────────
+server {
+    listen 80;
+    server_name _;
+
+    # Let's Encrypt ACME challenge path (certbot uses this)
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ── Platform admin: app.neofy.com ─────────────────────────────────────────────
+server {
+    listen 443 ssl http2;
+    server_name app.neofy.com api.neofy.com admin.neofy.com;
+
+    ssl_certificate     /etc/letsencrypt/live/neofy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/neofy.com/privkey.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    access_log /var/log/nginx/neofy-platform.access.log;
+    error_log  /var/log/nginx/neofy-platform.error.log;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass         http://neofy_rails;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Connection        "";
+        proxy_read_timeout 60s;
+    }
+}
+
+# ── Wildcard: tenant subdomains + custom domains ──────────────────────────────
+# Catches ALL other hosts:
+#   - *.neofy.com (tenant subdomains)
+#   - Any CNAME/A record pointed here (custom domains)
+# Rails resolves the correct tenant from request.host.
+server {
+    listen 443 ssl http2;
+    server_name *.neofy.com _;  # wildcard + default catch-all
+
+    # For wildcard SSL you need a wildcard cert (Let's Encrypt via certbot --wildcard)
+    ssl_certificate     /etc/letsencrypt/live/neofy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/neofy.com/privkey.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    access_log /var/log/nginx/neofy-storefront.access.log;
+    error_log  /var/log/nginx/neofy-storefront.error.log;
+
+    client_max_body_size 10M;
+
+    # Block requests with suspicious host headers
+    if ($host !~* "^([a-z0-9\-]+\.)+[a-z]{2,}$") {
+        return 444;
+    }
+
+    location / {
+        proxy_pass         http://neofy_rails;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Connection        "";
+        proxy_read_timeout 60s;
+    }
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Custom domain SSL note:
+# For per-domain SSL certificates (mystore.com via Let's Encrypt), use
+# certbot with the --standalone or --webroot plugin per domain.
+# A future improvement is to use Caddy Server which auto-provisions SSL
+# via ACME for any incoming hostname — ideal for Shopify-style custom domains.
+# ──────────────────────────────────────────────────────────────────────────────
