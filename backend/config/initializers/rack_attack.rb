@@ -76,8 +76,5 @@ class Rack::Attack
   end
 end
 
-# Use Redis for distributed rate limiting (same Redis as Sidekiq)
-Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(
-  url:       ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
-  namespace: "rack_attack"
-)
+# Use memory cache for rate limiting (Redis disabled for deployment)
+Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
