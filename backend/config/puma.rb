@@ -10,7 +10,8 @@ threads min_threads, max_threads
 
 # Number of worker processes.
 # Rule of thumb: 2 × CPU cores for I/O-heavy Rails apps.
-workers ENV.fetch("WEB_CONCURRENCY", 2).to_i
+# Temporarily disabled for deployment debugging
+workers 0
 
 # Port / socket
 # Render uses PORT env var, even in production
@@ -27,7 +28,8 @@ activate_control_app
 
 # Pre-load the application in the master process.
 # Workers then fork, sharing the code — reduces boot time and memory.
-preload_app!
+# Temporarily disabled to debug deployment issues
+# preload_app!
 
 # Re-establish DB connections in each worker after fork
 on_worker_boot do
