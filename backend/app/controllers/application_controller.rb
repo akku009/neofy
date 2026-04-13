@@ -1,5 +1,4 @@
-class ApplicationController < ActionController::API
-  include ActionController::MimeResponds
+class ApplicationController < ActionController::Base
   include Pundit::Authorization
 
   skip_before_action :authenticate_user!, only: [:health, :info, :welcome]
