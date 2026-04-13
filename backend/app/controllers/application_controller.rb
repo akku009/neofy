@@ -2,9 +2,9 @@ class ApplicationController < ActionController::API
   include ActionController::MimeResponds
   include Pundit::Authorization
 
-  skip_before_action :authenticate_user!, only: [:health, :info]
-  skip_before_action :set_current_attributes, only: [:health, :info]
-  skip_before_action :resolve_tenant_from_subdomain, only: [:health, :info]
+  skip_before_action :authenticate_user!, only: [:health, :info, :welcome]
+  skip_before_action :set_current_attributes, only: [:health, :info, :welcome]
+  skip_before_action :resolve_tenant_from_subdomain, only: [:health, :info, :welcome]
 
   before_action :authenticate_user!
   before_action :set_current_attributes
@@ -120,6 +120,11 @@ class ApplicationController < ActionController::API
       timestamp: Time.current.iso8601,
       version: "1.0.0"
     }
+  end
+
+  # Welcome page (no auth required)
+  def welcome
+    render :welcome, layout: false
   end
 
   # API info endpoint (no auth required)
