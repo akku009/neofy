@@ -10,8 +10,8 @@ Rails.application.configure do
   config.log_tags          = [:request_id]
 
   # ── Database / Caching ────────────────────────────────────────────────────────
-  # Use file store for deployment to avoid Redis connection issues
-  config.cache_store = :file_store, Rails.root.join("tmp", "cache")
+  # Use memory store for deployment to avoid Redis connection issues
+  config.cache_store = :memory_store, { size: 64.megabytes }
 
   # ── Background Jobs ───────────────────────────────────────────────────────────
   config.active_job.queue_adapter = :sidekiq

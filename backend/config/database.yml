@@ -19,3 +19,15 @@ test:
 production:
   url: <%= ENV["DATABASE_URL"] %>
   pool: 5
+
+development:
+  <<: *default
+  database: neofy_development
+
+test:
+  <<: *default
+  database: neofy_test
+
+production:
+  url: <%= ENV["DATABASE_URL"] %>
+  pool: 5
