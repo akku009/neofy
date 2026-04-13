@@ -2,7 +2,7 @@ require "sidekiq/web"
 
 Rails.application.routes.draw do
   # ── Root Route ───────────────────────────────────────────────────────────────
-  root to: "application#info"
+  root to: proc { [200, {'Content-Type' => 'application/json'}, [{message: 'Neofy API is running', status: 'ok'}.to_json]] }
   
   # ── Health Check ─────────────────────────────────────────────────────────────
   get "health", to: "application#health"
