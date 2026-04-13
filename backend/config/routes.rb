@@ -1,6 +1,9 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
+  # ── Health Check ─────────────────────────────────────────────────────────────
+  get "health", to: "application#health"
+
   # ── Sidekiq Web UI (admin only — protected in production) ──────────────────
   authenticate :user, ->(u) { u.role_admin? } do
     mount Sidekiq::Web => "/sidekiq"

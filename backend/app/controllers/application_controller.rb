@@ -2,6 +2,10 @@ class ApplicationController < ActionController::API
   include ActionController::MimeResponds
   include Pundit::Authorization
 
+  skip_before_action :authenticate_user!, only: [:health]
+  skip_before_action :set_current_attributes, only: [:health]
+  skip_before_action :resolve_tenant_from_subdomain, only: [:health]
+
   before_action :authenticate_user!
   before_action :set_current_attributes
   before_action :resolve_tenant_from_subdomain
@@ -107,5 +111,14 @@ class ApplicationController < ActionController::API
 
   def render_tenant_error(exception)
     render json: { error: exception.message }, status: :internal_server_error
+  end
+
+  # Health check endpoint (no auth required)
+  def health
+    render json: { 
+      status: "ok", 
+      timestamp: Time.current.iso8601,
+      version: "1.0.0"
+    }
   end
 end
